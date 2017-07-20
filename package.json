@@ -1,0 +1,9 @@
+{
+  "name": "spokane-guide-alexa-skill",
+  "author": "Clint Bush | clint@madebyclint.com",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "alexa-sdk": "^1.0.10"
+  }
+}
