@@ -48,7 +48,7 @@ var handlers = {
     // speechOutput = "This is a place holder response for the intent named WhosThereIntent. This intent has no slots. Anything else?";
     // this.emit(":ask",speechOutput);
     this.emit(
-      ":ask",
+      ":tell",
       'interrupting cow<break time="1s"/><say-as interpret-as="interjection"><prosody volume="x-loud" rate="x-slow">moo</prosody></say-as>'
     );
   }
