@@ -13,7 +13,7 @@
 var speechOutput;
 var reprompt;
 var welcomeOutput = "Knock knock";
-var welcomeReprompt = "sample re-prompt text";
+var welcomeReprompt = "I said knock knock";
 // 2. Skill Code =======================================================================================================
 ("use strict");
 var Alexa = require("alexa-sdk");
