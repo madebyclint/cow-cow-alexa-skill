@@ -10,47 +10,84 @@
 // 1. Text strings =====================================================================================================
 //    Modify these strings and messages to change the behavior of your Lambda function
 
-var speechOutput;
-var reprompt;
-var welcomeOutput = "Knock knock";
-var welcomeReprompt = "I said knock knock";
+var speechOutput = {
+  welcomeOutputInit: `Hello. `,
+  welcomeOutput: `Can I tell you a knock knock joke?`,
+  startJokeOutput: `Ok great. Knock knock.`,
+  // jokeResponseOutput: "Interrupting cow",
+  punchlineOutput: `Interrupting cow<break time="1s"/><say-as interpret-as="interjection"><prosody volume="x-loud" rate="x-slow">moo</prosody></say-as>.`,
+  noOutput: `<prosody pitch="high" rate="fast"><emphasis level="moderate">oh...</emphasis></prosody> ok. maybe <prosody pitch="high" rate="fast">next</prosody> time.`,
+  stopOutput: `<prosody pitch="high" rate="fast"><emphasis level="moderate">oh...</emphasis></prosody> ok. <prosody pitch="high" rate="fast">goodbye.</prosody>`,
+  localReprompt: ``,
+  localSpeechOutput: ``
+};
+speechOutput.welcomeReprompt =
+  `I'm sorry. I did not get that.` + speechOutput.welcomeOutput;
+speechOutput.startOverOutput =
+  `Ok. Starting over.` +
+  speechOutput.welcomeOutputInit +
+  speechOutput.welcomeOutput;
+
 // 2. Skill Code =======================================================================================================
 ("use strict");
-var Alexa = require("alexa-sdk");
-var APP_ID = "amzn1.ask.skill.b6332c11-26b6-4d6f-bf66-1090e49a3863";
-var speechOutput = "";
+var Alexa = require(`alexa-sdk`);
+var APP_ID = `amzn1.ask.skill.b6332c11-26b6-4d6f-bf66-1090e49a3863`;
 var handlers = {
   LaunchRequest: function() {
-    this.emit(":ask", welcomeOutput, welcomeReprompt);
+    this.attributes.jokeProgress = `welcome`;
+    this.emit(
+      ":ask",
+      speechOutput.welcomeOutputInit + speechOutput.welcomeOutput,
+      speechOutput.welcomeReprompt
+    );
   },
   "AMAZON.HelpIntent": function() {
-    speechOutput = "";
-    reprompt = "";
-    this.emit(":ask", speechOutput, reprompt);
+    this.attributes.jokeProgress = `help`;
+    speechOutput.localSpeechOutput =
+      "You can say things like, who's there, stop, or start over. Would you like me to start over?";
+    reprompt =
+      "I'm sorry I did not get that. " + speechOutput.localSpeechOutput;
+    this.emit(":ask", speechOutput.localSpeechOutput, reprompt);
+  },
+  "AMAZON.YesIntent": function() {
+    switch (this.attributes.jokeProgress) {
+      case `welcome`:
+      case `help`:
+        this.attributes.jokeProgress = `welcome`;
+        this.emit(`:ask`, speechOutput.startJokeOutput);
+        break;
+    }
+  },
+  "AMAZON.NoIntent": function() {
+    this.attributes.jokeProgress = `no`;
+    this.emit("AMAZON.StopIntent");
   },
   "AMAZON.CancelIntent": function() {
-    speechOutput = "";
-    this.emit(":tell", speechOutput);
+    this.emit("AMAZON.NoIntent");
+  },
+  StartOverIntent: function() {
+    this.attributes.jokeProgress = `welcome`;
+    this.emit(":ask", speechOutput.startJokeOutput);
   },
   "AMAZON.StopIntent": function() {
-    speechOutput = "";
-    this.emit(":tell", speechOutput);
+    if (this.attributes.jokeProgress === "no") {
+      this.emit(":tell", speechOutput.noOutput);
+    } else {
+      this.emit(":tell", speechOutput.stopOutput);
+    }
   },
   SessionEndedRequest: function() {
-    speechOutput = "";
-    this.emit(":tell", speechOutput);
+    speechOutput.localSpeechOutput = `Goodbye`;
+    this.emit(":tell", speechOutput.localSpeechOutput);
   },
   WhosThereIntent: function() {
-    // var speechOutput = "";
+    // var speechOutput = ``;
     //any intent slot variables are listed here for convenience
 
     //Your custom intent handling goes here
     // speechOutput = "This is a place holder response for the intent named WhosThereIntent. This intent has no slots. Anything else?";
     // this.emit(":ask",speechOutput);
-    this.emit(
-      ":tell",
-      'interrupting cow<break time="1s"/><say-as interpret-as="interjection"><prosody volume="x-loud" rate="x-slow">moo</prosody></say-as>'
-    );
+    this.emit(":tell", speechOutput.punchlineOutput);
   }
 };
 
